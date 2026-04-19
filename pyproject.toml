@@ -4,4 +4,20 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "ingestion",
+    "logger",
+]
+
+[tool.uv.sources]
+ingestion = { workspace = true }
+logger = { workspace = true }
+
+[tool.uv.workspace]
+members = [
+    "ingestion",
+    "libs/*",
+]
+
+[tool.uv]
+package = false

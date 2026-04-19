@@ -1,0 +1,65 @@
+# Virtual environments
+.venv
+
+# Environment variables
+.env
+.env.local
+.env.production
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Data Lake / Local Storage ---
+/data/
+
+
+# OS
+.DS_Store
+Thumbs.db
+
+# secrets
+secrets/
+planning/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.py[oc]
+*.egg-info
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Airflow ---
+ingestion/logs/
+airflow.db
+airflow.cfg
+webserver_config.py
+
+# --- Linting & Typing Caches ---
+.ruff_cache/
+.mypy_cache/
+

@@ -222,4 +222,4 @@ if __name__ == "__main__": # pragma: no cover
             if intensity_payload.data:
                 print(f"Intensity Records Fetched: {len(intensity_payload.data)}")
         except Exception as e:
-            logger.error("Pipeline execution failed", exc_info=True)
+            logger.error("Ember client execution failed", exc_info=True)

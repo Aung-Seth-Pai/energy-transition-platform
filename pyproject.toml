@@ -16,7 +16,7 @@ logger = { workspace = true }
 [tool.uv.workspace]
 members = [
     "ingestion",
-    "libs/*",
+    "libs/logger",
 ]
 
 [tool.uv]

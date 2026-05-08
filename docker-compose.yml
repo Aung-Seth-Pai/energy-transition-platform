@@ -1,3 +1,9 @@
+# docker-compose.yml  (base — prod-safe)
+#
+# Volumes and dev mounts live in docker-compose.override.yml.
+# That file is merged automatically when running locally.
+# In production, run with: docker compose -f docker-compose.yml up
+
 x-airflow-common: &airflow-common
   build:
     context: .
@@ -10,17 +16,8 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+    AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
     GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/secrets/gcp-service-account.json
-  volumes:
-    # dev mounts for live edits
-    - ./ingestion/dags:/opt/airflow/dags
-    - ./ingestion/src:/opt/airflow/ingestion/src
-    - ./ingestion/logs:/opt/airflow/logs
-    - ./ingestion/plugins:/opt/airflow/plugins
-    - ./libs/logger/src:/opt/airflow/libs/logger/src
-    - /data:/opt/data
-    # read-only mounts
-    - ./secrets/gcp-service-account.json:/opt/airflow/secrets/gcp-service-account.json:ro
   depends_on:
     postgres:
       condition: service_healthy

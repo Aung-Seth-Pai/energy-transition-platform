@@ -6,27 +6,26 @@ Replace with real ingestion logic once infrastructure is confirmed stable.
 from datetime import datetime
 
 from airflow.decorators import dag, task
+from ingestion.ember.ember_client import EmberAPIClient
+from logger import get_logger
 
+logger = get_logger(__name__)
 
 @dag(
     dag_id="test_dag",
-    description="Placeholder DAG — confirms Airflow is healthy.",
+    description="DAG Smoketest — confirms Airflow is healthy.",
     schedule=None,
     start_date=datetime(2026, 1, 1),
     catchup=False,
-    tags=["placeholder"],
+    tags=['bronze', 'SmokeTest'],
 )
-def test_dag():
-    """Minimal DAG with a single no-op task."""
-
+def ingest_ember_data():
     @task
-    def hello() -> None:
-        """Logs a confirmation message."""
-        from logger import get_logger
+    def test_client_init():
+        client = EmberAPIClient(api_key="dummy_smoke_test_key")
+        logger.info(f"Smoke Test: client initialized successfuly with base URL: {client.base_url}")
+        return "Client OK"
+    test_client_init()
 
-        log = get_logger(__name__)
-        log.info("Airflow is operational. Replace this DAG with real ingestion logic.")
-
-    hello()
-
-test_dag()
+# instantiate the DAG
+ingest_ember_data()

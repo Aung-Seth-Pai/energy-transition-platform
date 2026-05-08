@@ -97,8 +97,8 @@ class EmberAPIClient:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Ensures the requests session is closed."""
-        self.session.close()
         self._is_closed = True
+        self.session.close()
         logger.info("Client session closed.")
    
     def _get(self, endpoint: str, params: dict = None) -> dict:
@@ -159,7 +159,7 @@ class EmberAPIClient:
 
     def get_monthly_power_sector_emission(self, **kwargs) -> EmberResponse[EmberPowerSectorEmissionRecord]:
         """
-        Fetches Monthly Power Sector Emissionnoi, data.
+        Fetches Monthly Power Sector Emission, data.
         """
         raw_json = self._get("power-sector-emissions/monthly", params=kwargs)
         return EmberResponse[EmberPowerSectorEmissionRecord](**raw_json)

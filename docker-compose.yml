@@ -12,7 +12,7 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
     GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/secrets/gcp-service-account.json
   volumes:
-    # degv mounts for live edits
+    # dev mounts for live edits
     - ./ingestion/dags:/opt/airflow/dags
     - ./ingestion/src:/opt/airflow/ingestion/src
     - ./ingestion/logs:/opt/airflow/logs

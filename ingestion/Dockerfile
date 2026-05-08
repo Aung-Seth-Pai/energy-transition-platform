@@ -12,8 +12,8 @@ COPY --chown=airflow:root libs/logger/pyproject.toml libs/logger/README.md ./lib
 COPY --chown=airflow:root libs/logger/src ./libs/logger/src
 COPY --chown=airflow:root ingestion/src ./ingestion/src/
 
-# 3. NOW sync everything
-RUN uv sync --frozen --package ingestion --package logger --no-dev
+# 3. Install workspace packages into the active environment
+RUN uv pip install --no-cache -e libs/logger/ -e ingestion/
 
 # 4. Copy DAGs (These don't need to be built by uv, so they can stay at the bottom)
 COPY --chown=airflow:root ingestion/dags ./dags/

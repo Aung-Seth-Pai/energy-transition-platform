@@ -1,0 +1,10 @@
+transitionwatch:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      # Single-file warehouse that lives alongside our bronze data.
+      # Inside the container: /opt/data/warehouse/transitionwatch.duckdb
+      # On the host:         ./data/warehouse/transitionwatch.duckdb
+      path: "{{ env_var('DUCKDB_PATH', '/opt/data/warehouse/transitionwatch.duckdb') }}"
+      threads: 4

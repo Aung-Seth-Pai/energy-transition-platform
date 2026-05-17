@@ -1,43 +1,27 @@
 # docker-compose.override.yml
 #
-# Dev-only overrides. This file is automatically merged by Docker Compose
-# when you run `docker compose up` locally (no extra flags needed).
-#
-# For production / staging, do NOT copy this file to the server.
-# The base docker-compose.yml runs the baked image as-is.
-#
-# Usage:
-#   dev:  docker compose up                  (merges this file automatically)
-#   prod: docker compose -f docker-compose.yml up   (base only, no dev mounts)
+# Dev-only overrides. Merged automatically by Docker Compose locally.
+# For production: docker compose -f docker-compose.yml up
 
 x-airflow-dev-volumes: &dev-volumes
   volumes:
-    # Live-reload: edits on the host are reflected immediately inside the container.
-    # Remove these in prod so the baked image code is what actually runs.
     - ./ingestion/dags:/opt/airflow/dags
     - ./ingestion/src:/opt/airflow/ingestion/src
     - ./libs/logger/src:/opt/airflow/libs/logger/src
-
-    # Persistent bronze zone — must match BRONZE_DIR in .env
-    - /data:/opt/data
-
-    # Logs and plugins (convenience mounts, not code)
+    - ./data:/opt/data
     - ./ingestion/logs:/opt/airflow/logs
     - ./ingestion/plugins:/opt/airflow/plugins
-
-    # GCP service account (read-only)
     - ./secrets/gcp-service-account.json:/opt/airflow/secrets/gcp-service-account.json:ro
 
 services:
-  # Runs once as root to ensure the bronze zone exists and is owned by the
-  # airflow user (uid 50000) before the scheduler or webserver start.
   init_dirs:
     image: alpine:3.19
     user: root
     volumes:
-      - /data:/opt/data
+      - ./data:/opt/data
     command: >
-      sh -c "mkdir -p /opt/data/bronze &&
+      sh -c "mkdir -p /opt/data/bronze /opt/data/warehouse &&
+             chmod 777 /opt/data/warehouse &&
              chown -R 50000:0 /opt/data &&
              chmod -R 775 /opt/data &&
              echo 'Directory permissions set OK'"
@@ -56,3 +40,33 @@ services:
 
   airflow-init:
     <<: *dev-volumes
+
+  # dbt + DuckDB transformation runner.
+  # Packages are baked into the image at build time (dbt deps runs in Dockerfile).
+  # Rebuild the image when packages.yml changes: docker compose build dbt
+  #
+  # Usage:
+  #   docker compose run --rm dbt run
+  #   docker compose run --rm dbt test
+  #   docker compose run --rm dbt run --select stg_ember__generation
+  dbt:
+    build:
+      context: ./transform
+      dockerfile: Dockerfile
+    volumes:
+      # Live-reload model/test/macro edits without rebuilding the image.
+      # These override the COPY . . layer from the Dockerfile at runtime,
+      # so you edit locally and changes are reflected immediately.
+      - ./transform/models:/transform/models
+      - ./transform/macros:/transform/macros
+      - ./transform/tests:/transform/tests
+      # Shared data — reads bronze JSON, writes DuckDB warehouse file.
+      - ./data:/opt/data
+    environment:
+      BRONZE_DIR: /opt/data/bronze
+      DUCKDB_PATH: /opt/data/warehouse/transitionwatch.duckdb
+    profiles:
+      - tools
+    depends_on:
+      init_dirs:
+        condition: service_completed_successfully

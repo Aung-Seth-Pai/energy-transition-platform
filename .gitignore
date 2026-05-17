@@ -63,3 +63,7 @@ webserver_config.py
 .ruff_cache/
 .mypy_cache/
 
+# dbt artifacts
+transform/target/
+transform/dbt_packages/
+transform/package-lock.yml

@@ -1,0 +1,32 @@
+name: transitionwatch
+version: "1.0.0"
+config-version: 2
+
+profile: transitionwatch
+
+model-paths: ["models"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  transitionwatch:
+    staging:
+      +schema: staging
+      # table: data is physically stored in DuckDB after dbt run.
+      # This means:
+      #   - Queries from notebooks/FastAPI work without the bronze files being reachable
+      #   - dbt run re-reads bronze JSON and refreshes the table (full refresh each run)
+      #   - Slightly slower dbt run, but queries are instant and portable
+      # Alternative is view, but views re-execute read_json on every query,
+      # which only works inside the container where /opt/data/bronze exists.
+      +materialized: table
+    intermediate:
+      +schema: intermediate
+      +materialized: table
+    marts:
+      +schema: marts
+      +materialized: table
+ 

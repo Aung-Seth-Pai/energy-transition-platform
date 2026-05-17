@@ -1,0 +1,37 @@
+version: 2
+
+sources:
+  - name: bronze_ember
+    description: >
+      Raw Ember Energy API data landed as partitioned JSON files in the local
+      bronze zone. DuckDB reads these directly via glob patterns — no loading
+      step required. Each file contains an 'extracted_at', 'logical_date',
+      'stats', and 'data' array of records.
+    meta:
+      bronze_path: "{{ env_var('BRONZE_DIR', '/opt/data/bronze') }}/ember"
+
+    tables:
+      - name: generation
+        description: "Monthly electricity generation by country and energy series (TWh)."
+        meta:
+          path: "{{ env_var('BRONZE_DIR', '/opt/data/bronze') }}/ember/generation/year=*/month=*/data.json"
+
+      - name: demand
+        description: "Monthly electricity demand by country (TWh)."
+        meta:
+          path: "{{ env_var('BRONZE_DIR', '/opt/data/bronze') }}/ember/demand/year=*/month=*/data.json"
+
+      - name: carbon_intensity
+        description: "Monthly grid carbon intensity by country (gCO2/kWh)."
+        meta:
+          path: "{{ env_var('BRONZE_DIR', '/opt/data/bronze') }}/ember/carbon_intensity/year=*/month=*/data.json"
+
+      - name: power_sector_emission
+        description: "Monthly power sector emissions by country and series (MtCO2)."
+        meta:
+          path: "{{ env_var('BRONZE_DIR', '/opt/data/bronze') }}/ember/power_sector_emission/year=*/month=*/data.json"
+
+      - name: installed_capacity
+        description: "Monthly installed electricity capacity by country and series (GW)."
+        meta:
+          path: "{{ env_var('BRONZE_DIR', '/opt/data/bronze') }}/ember/installed_capacity/year=*/month=*/data.json"

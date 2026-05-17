@@ -1,0 +1,196 @@
+version: 2
+
+models:
+  - name: stg_ember__generation
+    description: >
+      Monthly electricity generation by country and energy series.
+      Aggregate entities and series are excluded — atomic rows only.
+    columns:
+      - name: generation_id
+        description: Surrogate key (entity_code + series + month_date).
+        tests:
+          - unique
+          - not_null
+      - name: entity_code
+        description: ISO 3-letter country code.
+        tests:
+          - not_null
+      - name: entity
+        description: Human-readable country name.
+        tests:
+          - not_null
+      - name: series
+        description: Energy source (e.g. Coal, Wind, Solar, Bioenergy).
+        tests:
+          - not_null
+      - name: month_date
+        description: First day of the reporting month (YYYY-MM-01).
+        tests:
+          - not_null
+      - name: generation_twh
+        description: >
+          Electricity generated in terawatt-hours. Can be negative for
+          pumped hydro storage (net energy consumed to pump water uphill).
+      - name: share_of_generation_pct
+        description: Share of this series in total country generation (%).
+      - name: is_aggregate_entity
+        description: Always false in this model (aggregates filtered out).
+        tests:
+          - accepted_values:
+              arguments:
+                values: [false]
+      - name: is_aggregate_series
+        description: Always false in this model (aggregates filtered out).
+        tests:
+          - accepted_values:
+              arguments:
+                values: [false]
+      - name: extracted_at
+        description: Timestamp when the Airflow task wrote this file to bronze.
+        tests:
+          - not_null
+      - name: logical_date
+        description: Airflow logical/scheduled date of the DAG run.
+        tests:
+          - not_null
+
+  - name: stg_ember__demand
+    description: >
+      Monthly total electricity demand by country.
+      Includes consumption from all sources including net imports.
+    columns:
+      - name: demand_id
+        description: Surrogate key (entity_code + month_date).
+        tests:
+          - unique
+          - not_null
+      - name: entity_code
+        tests:
+          - not_null
+      - name: entity
+        tests:
+          - not_null
+      - name: month_date
+        tests:
+          - not_null
+      - name: demand_twh
+        description: Total electricity demand in terawatt-hours.
+        tests:
+          - not_null
+      - name: is_aggregate_entity
+        tests:
+          - accepted_values:
+              arguments:
+                values: [false]
+
+  - name: stg_ember__carbon_intensity
+    description: >
+      Monthly grid carbon intensity by country.
+      Weighted average across all generation sources including imports.
+    columns:
+      - name: carbon_intensity_id
+        description: Surrogate key (entity_code + month_date).
+        tests:
+          - unique
+          - not_null
+      - name: entity_code
+        tests:
+          - not_null
+      - name: entity
+        tests:
+          - not_null
+      - name: month_date
+        tests:
+          - not_null
+      - name: emissions_intensity_gco2_per_kwh
+        description: >
+          Grid carbon intensity in grams of CO2 per kilowatt-hour.
+          0.0 = fully renewable grid (e.g. Iceland).
+          Range in current data: 0.0 – 895.24.
+        tests:
+          - not_null
+      - name: is_aggregate_entity
+        tests:
+          - accepted_values:
+              arguments:
+                values: [false]
+
+  - name: stg_ember__power_sector_emission
+    description: >
+      Monthly power sector CO2 emissions by country and generation series.
+      Aggregate entities and series excluded.
+    columns:
+      - name: power_sector_emission_id
+        description: Surrogate key (entity_code + series + month_date).
+        tests:
+          - unique
+          - not_null
+      - name: entity_code
+        tests:
+          - not_null
+      - name: entity
+        tests:
+          - not_null
+      - name: series
+        description: Emission source (e.g. Coal, Gas, Oil, Wind).
+        tests:
+          - not_null
+      - name: month_date
+        tests:
+          - not_null
+      - name: emissions_mtco2
+        description: Emissions in megatonnes of CO2-equivalent.
+      - name: share_of_emissions_pct
+        description: >
+          Share of this series in total country power sector emissions (%).
+          Sums to ~100% per (entity, month) across non-aggregate series.
+      - name: is_aggregate_entity
+        tests:
+          - accepted_values:
+              arguments:
+                values: [false]
+      - name: is_aggregate_series
+        tests:
+          - accepted_values:
+              arguments:
+                values: [false]
+
+  - name: stg_ember__installed_capacity
+    description: >
+      Monthly installed electricity generation capacity by country and series.
+      Aggregate entities and series excluded.
+    columns:
+      - name: installed_capacity_id
+        description: Surrogate key (entity_code + series + month_date).
+        tests:
+          - unique
+          - not_null
+      - name: entity_code
+        tests:
+          - not_null
+      - name: entity
+        tests:
+          - not_null
+      - name: series
+        description: Capacity type (e.g. Onshore wind, Solar, Coal).
+        tests:
+          - not_null
+      - name: month_date
+        tests:
+          - not_null
+      - name: capacity_gw
+        description: Nameplate installed capacity in gigawatts.
+      - name: capacity_w_per_capita
+        description: >
+          Installed capacity in watts per capita.
+          Useful for cross-country comparison normalised by population size.
+      - name: is_aggregate_entity
+        tests:
+          - accepted_values:
+              arguments:
+                values: [false]
+      - name: is_aggregate_series
+        tests:
+          - accepted_values:
+              arguments:
+                values: [false]
